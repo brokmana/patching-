@@ -1,0 +1,26 @@
+---
+  - name: Sending mail to Platform Team 
+    hosts: localhost   ###Please do not change hosts entry####
+    become: true
+    ignore_errors: yes
+    roles:
+     - { role: pre_patch_mail }
+
+  - name: Patching
+    hosts: all     ###Please don't change hosts entry###
+    become: true
+    ignore_errors: yes
+    roles:
+     - { role: patch_pre_validation }
+     - { role: diskcheck }
+     - { role: yum_update }
+     - { role: kernelcheck_reboot }
+     - { role: patch_post_validation }
+  
+  - name: Sending mail to Platform Team after patching
+    hosts: localhost   ###Please do not change hosts entry###
+    become: true
+    ignore_errors: yes
+    roles:
+     - { role: post_patch_mail }
+...

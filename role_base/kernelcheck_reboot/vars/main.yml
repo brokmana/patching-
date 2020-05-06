@@ -1,0 +1,3 @@
+---
+# vars file for kernelcheck_reboot
+Running_Kernel: "{{ ansible_kernel }}"

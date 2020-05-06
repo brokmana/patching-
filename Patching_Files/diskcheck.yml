@@ -1,0 +1,22 @@
+---
+  - name: (pre_event) Free space in /boot partition is greater than 40MB
+#    shell: df -P /boot | grep -e /dev/xvda1 | tr -s ' ' | cut -d ' ' -f 4
+    shell: i=$(df -P /boot|grep -i /dev|awk '{print $1}');df -P /boot  | grep -e $i  | tr -s ' ' | cut -d ' ' -f 4
+    register: boot_partition_space
+
+  - name: Remove old Kernel if space less than 40MB
+    shell: /usr/bin/yum install -y yum-utils ; /usr/bin/package-cleanup --oldkernels --count=2 -y
+    when: boot_partition_space.stdout|int <= 40000 and (ansible_distribution == "RedHat" or ansible_distribution == "CentOS")
+
+  - name: (pre_event) Free space in /var before update
+#    shell:  df -P /var  | grep -e /dev/mapper/rootvg-LogVol02  | tr -s ' ' | cut -d ' ' -f 4
+    shell: i=$(df -P /var|grep -i /dev|awk '{print $1}');df -P /var  | grep -e $i  | tr -s ' ' | cut -d ' ' -f 4
+    register: var_space
+
+  - name: Remove space if less than  750MB
+    when: var_space.stdout|int <= 750000
+    script: var.sh
+
+  - name: Remove audit logs, if space less than 75 percentage.
+    script: audit_clean_critical.sh
+...

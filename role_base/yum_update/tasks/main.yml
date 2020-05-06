@@ -1,0 +1,28 @@
+---
+# tasks file for yum_update
+
+    - name: upgrade all packages on the server
+      yum:
+        name: '*'
+        state: latest
+        update_cache: yes
+        exclude: jbossas-javadocs*,redhat-release*,*jdk*,java*
+      async: 1800
+      poll: 60
+
+    - name: get last installed packages by yum install
+      shell:
+       cmd: rpm -qa --last | grep "`date +'%a %d %b %Y'`"
+      register: yumout
+
+    - name: create directory as patching date
+      file: path=/var/tmp/post_output/{{ansible_date_time.date}} state=directory
+      delegate_to: basemachine
+
+    - name: copy yum out to ansible master
+      copy:
+       content: "{{ yumout.stdout }} \n"
+       dest: /var/tmp/post_output/{{ansible_date_time.date}}/{{ ansible_hostname }}_yumlog_beforereboot_afterupdate_{{ ansible_date_time.date }}.txt
+      delegate_to: basemachine
+...
+
